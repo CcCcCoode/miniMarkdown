@@ -220,6 +220,11 @@ export class ParsingContext {
     this.setInParagraph(false);
     this.setListActive(false);
     this.setHeadingActive(false);
-    // 可扩展其他需要重置的状态
+    this.setInTable(false);
+    // 清空列表/引用层级栈，避免跨次解析残留嵌套状态
+    this.currentState.listLevelStack = [];
+    this.currentState.quoteLevelStack = [];
+    this.currentState.inBlockquote = false;
+    this.indentLevel = 0;
   }
 }

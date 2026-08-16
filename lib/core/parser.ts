@@ -38,7 +38,13 @@ export class MarkdownParser {
     }
 
     parse(markdown: string): Token[] {
+        // 解析前重置上下文，避免多次 parse 之间状态泄漏
+        this.context.reset();
+
         const lines = markdown.split('\n');
+        // 将行数据注入上下文，供表格等需要读取下一行的规则使用
+        this.context.setLines(lines);
+
         const tokens: Token[] = [];
 
         for (this.context.currentLine = 0; this.context.currentLine < lines.length; this.context.currentLine++) {
@@ -46,6 +52,16 @@ export class MarkdownParser {
             tokens.push(...this.parseLine(line));
         }
 
+        // 文档结束时自动闭合未闭合的段落，保证输出标签完整
+        if (this.context.isInParagraph) {
+            this.context.setInParagraph(false);
+            tokens.push(new Token({
+                type: TokenType.PARAGRAPH_CLOSE,
+                tag: 'p',
+                nesting: -1,
+                block: true,
+            }));
+        }
 
         return tokens;
     }

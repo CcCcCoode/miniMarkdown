@@ -12,7 +12,7 @@ export class TableRule extends BaseBlockRule {
 
     private TABLE_REGEX = /^\s*\|(.+)\|\s*$/;
     private TABLE_ALIGN_REGEX = /^:?-{3,}:?$/;
-    private TABLE_DATA_REGEX = /^\s*\|(?:\s*[^|]+?)+\|\s*$/;
+    private TABLE_DATA_REGEX = /^\s*\|(?:[^|]*\|)+\s*$/;
 
     constructor() {
         super(RULE_PRIORITIES.TABLE); // 调整优先级，确保在列表和引用之后处理
@@ -47,8 +47,7 @@ export class TableRule extends BaseBlockRule {
             const headerCells = this.escapedSplit(currentLine);
             const separatorCells = this.escapedSplit(nextLine);
             if (headerCells.length === separatorCells.length) {
-                ctx.setInTable(true);
-                ctx.setTableStartIndex(index); // 记录表格开始位置
+                // 注意：match 不应产生副作用，表格状态的建立统一放在 execute 中处理
                 return true;
             }
         }
@@ -124,13 +123,15 @@ export class TableRule extends BaseBlockRule {
                     block: true,
                 }));
 
-                // 处理后续数据行
+                // 处理后续数据行，并记录本次向后扫描消费到的最后一行
+                let lastConsumedLine = index + 1; // 表头行 + 分隔符行已消费
                 for (let i = index + 2; i < lines.length; i++) {
                     const dataLine = lines[i];
                     if (!this.TABLE_DATA_REGEX.test(dataLine)) {
                         break;
                     }
                     this.processDataRow(dataLine, alignments, tokens);
+                    lastConsumedLine = i;
                 }
 
                 // 关闭表格标签
@@ -152,6 +153,9 @@ export class TableRule extends BaseBlockRule {
                 );
 
                 ctx.setInTable(false);
+
+                // 跳过已被本次向后扫描消费的行，避免主循环对数据行重复解析
+                ctx.currentLine = lastConsumedLine;
             }
         } else if (this.TABLE_DATA_REGEX.test(currentLine)) {
             // 处理表格数据行，使用保存的对齐信息
