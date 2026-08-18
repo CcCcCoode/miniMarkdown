@@ -191,7 +191,7 @@ export class TableRule extends BaseBlockRule {
         cells.forEach(cell => {
             tokens.push(
                 new Token({ type: TokenType.TABLE_CELL_OPEN, tag: 'th', nesting: 1 }),
-                new Token({ type: TokenType.TEXT, content: cell }),
+                ...this.parseInlineContent(cell),
                 new Token({ type: TokenType.TABLE_CELL_CLOSE, tag: 'th', nesting: -1 })
             );
         });
@@ -225,7 +225,7 @@ export class TableRule extends BaseBlockRule {
                     nesting: 1,
                     attrs: { style: `text-align: ${alignments[index] || 'left'}` }
                 }),
-                new Token({ type: TokenType.TEXT, content: cell }),
+                ...this.parseInlineContent(cell),
                 new Token({ type: TokenType.TABLE_CELL_CLOSE, tag: 'td', nesting: -1 })
             );
         });

@@ -115,7 +115,7 @@ export class ListRule extends BaseBlockRule {
         // 添加当前列表项
         tokens.push(
             new Token({type: TokenType.LIST_ITEM_OPEN, tag: 'li', nesting: 1, block: true}),
-            new Token({type: TokenType.TEXT, content: content.trim()}),
+            ...this.parseInlineContent(content.trim()),
         );
         ctx.openListItem();
 

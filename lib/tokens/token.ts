@@ -10,6 +10,14 @@ export enum TokenType {
     PARAGRAPH_CLOSE = "paragraph_close", // 段落结束
     TEXT = "text", // 文本
     INLINE = "inline", // 行内标记
+    STRONG_OPEN = "strong_open", // 粗体开始
+    STRONG_CLOSE = "strong_close", // 粗体结束
+    EMPHASIS_OPEN = "emphasis_open", // 斜体开始
+    EMPHASIS_CLOSE = "emphasis_close", // 斜体结束
+    STRIKETHROUGH_OPEN = "strikethrough_open", // 删除线开始
+    STRIKETHROUGH_CLOSE = "strikethrough_close", // 删除线结束
+    CODE_INLINE = "code_inline", // 行内代码
+    HARD_BREAK = "hard_break", // 硬换行
     HEADING_OPEN = "heading_open", // 标题开始
     HEADING_CLOSE = "heading_close", // 标题结束
     LIST_OPEN = "list_open", // 列表开始
@@ -35,7 +43,6 @@ export enum TokenType {
     IMAGE_CLOSE = "image_close", // 图片结束
     LINK_OPEN = "link_open", // 链接开始
     LINK_CLOSE = "link_close", // 链接结束
-    
 }
 
 /**

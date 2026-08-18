@@ -13,10 +13,10 @@ describe('block state model', () => {
     expect(tokenShape('- a\n- b')).toEqual([
       { type: TokenType.LIST_OPEN, tag: 'ul', content: undefined },
       { type: TokenType.LIST_ITEM_OPEN, tag: 'li', content: undefined },
-      { type: TokenType.TEXT, tag: undefined, content: 'a' },
+      { type: TokenType.INLINE, tag: undefined, content: 'a' },
       { type: TokenType.LIST_ITEM_CLOSE, tag: 'li', content: undefined },
       { type: TokenType.LIST_ITEM_OPEN, tag: 'li', content: undefined },
-      { type: TokenType.TEXT, tag: undefined, content: 'b' },
+      { type: TokenType.INLINE, tag: undefined, content: 'b' },
       { type: TokenType.LIST_ITEM_CLOSE, tag: 'li', content: undefined },
       { type: TokenType.LIST_CLOSE, tag: 'ul', content: undefined },
     ]);
@@ -27,15 +27,15 @@ describe('block state model', () => {
     expect(shapes.map((token) => token.type)).toEqual([
       TokenType.LIST_OPEN,
       TokenType.LIST_ITEM_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.LIST_OPEN,
       TokenType.LIST_ITEM_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.LIST_ITEM_CLOSE,
       TokenType.LIST_CLOSE,
       TokenType.LIST_ITEM_CLOSE,
       TokenType.LIST_ITEM_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.LIST_ITEM_CLOSE,
       TokenType.LIST_CLOSE,
     ]);
@@ -51,11 +51,11 @@ describe('block state model', () => {
     expect(tokenShape('- a\ntext').map((token) => token.type)).toEqual([
       TokenType.LIST_OPEN,
       TokenType.LIST_ITEM_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.LIST_ITEM_CLOSE,
       TokenType.LIST_CLOSE,
       TokenType.PARAGRAPH_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.PARAGRAPH_CLOSE,
     ]);
   });
@@ -67,7 +67,7 @@ describe('block state model', () => {
       TokenType.INLINE,
       TokenType.BLOCKQUOTE_CLOSE,
       TokenType.PARAGRAPH_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.PARAGRAPH_CLOSE,
     ]);
   });
@@ -87,13 +87,13 @@ describe('block state model', () => {
   test('closes a paragraph before headings and horizontal rules', () => {
     expect(tokenShape('text\n# heading\nnext\n---').map((token) => token.type)).toEqual([
       TokenType.PARAGRAPH_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.PARAGRAPH_CLOSE,
       TokenType.HEADING_OPEN,
       TokenType.INLINE,
       TokenType.HEADING_CLOSE,
       TokenType.PARAGRAPH_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.PARAGRAPH_CLOSE,
       TokenType.HORIZONTAL_RULE,
     ]);
@@ -101,7 +101,7 @@ describe('block state model', () => {
 
   test('normalizes CRLF and closes blocks at EOF', () => {
     const tokens = parseMarkdown('- a\r\n  - b');
-    expect(tokens.filter((token) => token.type === TokenType.TEXT).map((token) => token.content)).toEqual(['a', 'b']);
+    expect(tokens.filter((token) => token.type === TokenType.INLINE).map((token) => token.content)).toEqual(['a', 'b']);
     expect(tokens[tokens.length - 1].type).toBe(TokenType.LIST_CLOSE);
   });
 
@@ -111,7 +111,7 @@ describe('block state model', () => {
     expect(parserTokens[parserTokens.length - 1].type).toBe(TokenType.LIST_CLOSE);
     expect(parser.parse('plain').map((token) => token.type)).toEqual([
       TokenType.PARAGRAPH_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.PARAGRAPH_CLOSE,
     ]);
   });

@@ -49,14 +49,7 @@ export class BlockQuoteRule extends BaseBlockRule {
         }
 
         // 添加内容
-        tokens.push(
-            new Token({
-                type: TokenType.INLINE,
-                content: content,
-                children: this.parseInlineContent(content),
-                block: true
-            })
-        );
+        tokens.push(...this.parseInlineContent(content));
 
         return tokens;
     }

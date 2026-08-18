@@ -6,10 +6,11 @@ describe('public Markdown API', () => {
 
     expect(tokens.map((token) => token.type)).toEqual([
       TokenType.PARAGRAPH_OPEN,
-      TokenType.TEXT,
+      TokenType.INLINE,
       TokenType.PARAGRAPH_CLOSE,
     ]);
     expect(tokens[1].content).toBe('Hello');
+    expect(tokens[1].children[0].content).toBe('Hello');
   });
 
   test('supports parser options without exposing CLI side effects', () => {
