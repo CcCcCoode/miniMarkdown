@@ -12,10 +12,10 @@ import { BlockRule } from "../state";
 export class EmptyLineRule implements BlockRule {
     priority = RULE_PRIORITIES.EMPTY_LINE; // 高优先级
   
-    match(line: string, ctx: ParsingContext): boolean {
+    match(line: string, _ctx: ParsingContext): boolean {
       return line.trim().length === 0;
     }
-    execute(line: string, ctx: ParsingContext): Token[] {
+    execute(_line: string, ctx: ParsingContext): Token[] {
       // 遇到空行段落自动闭合
       if (ctx.isInParagraph) {
         ctx.setInParagraph(false);

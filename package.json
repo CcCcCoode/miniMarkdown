@@ -11,7 +11,10 @@
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "format": "prettier --write src/**/*.ts",
-    "test": "jest"
+    "test": "jest --runInBand",
+    "typecheck:lib": "tsc --noEmit -p tsconfig.lib.json",
+    "typecheck": "vue-tsc --noEmit -p tsconfig.app.json && npm run typecheck:lib",
+    "check": "npm test && npm run typecheck && npm run build"
   },
   "dependencies": {
     "vue": "^3.5.13"

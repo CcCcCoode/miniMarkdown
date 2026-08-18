@@ -13,7 +13,6 @@ import { BaseBlockRule } from "./base";
 export class ListRule extends BaseBlockRule {
     private unorderedRegex = /^([ \t]*)([-\*\+])\s+(.*)/;
     private orderedRegex = /^([ \t]*)(\d+)\.\s+(.*)/;
-    private static regex = /^[\-\*\+]\s+(.*)/; // 正则表达式
     private static MAX_NESTING_LEVEL = 5; // 最大嵌套层级
 
     constructor() {
@@ -25,7 +24,7 @@ export class ListRule extends BaseBlockRule {
         return /^([ \t]*)([-\*\+])\s+(.*)/.test(line) || /^([ \t]*)(\d+)\.\s+(.*)/.test(line);
     }
 
-    match(line: string, ctx: ParsingContext): boolean {
+    match(line: string, _ctx: ParsingContext): boolean {
         return ListRule.isListLine(line);
     }
 

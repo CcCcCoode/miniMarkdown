@@ -97,7 +97,7 @@ export class FSM {
       }
   
       // 类型校验逻辑
-      if (context && !this.isValidTransitionWithContext(transition, context)) {
+      if (context && !this.isValidTransitionWithContext(transition)) {
         return false;
       }
   
@@ -107,8 +107,7 @@ export class FSM {
   }
 
   private isValidTransitionWithContext(
-    targetState: string,
-    context: ParsingContext
+    targetState: string
   ): boolean {
     // 示例：在代码块中不允许突然转出到其他状态，必须通过 CODE_END_MARKER
     if (this.currentState === ParserState.CODE_BLOCK && 

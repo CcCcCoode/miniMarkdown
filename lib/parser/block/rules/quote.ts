@@ -19,7 +19,7 @@ export class BlockQuoteRule extends BaseBlockRule {
         super(RULE_PRIORITIES.BLOCKQUOTE); // p < 优先级 < list
     }
 
-    match(line: string, ctx: ParsingContext): boolean {
+    match(line: string, _ctx: ParsingContext): boolean {
         console.log('BlockQuote match:', BlockQuoteRule.regex.test(line), line);
         return BlockQuoteRule.regex.test(line);
     }

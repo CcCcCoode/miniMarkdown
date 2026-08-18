@@ -17,7 +17,7 @@ export class HeadingRule extends BaseBlockRule {
         super(RULE_PRIORITIES.HEADING); // 优先级高于段落
     }
 
-    match(line: string, ctx: ParsingContext): boolean {
+    match(line: string, _ctx: ParsingContext): boolean {
         // console.log('Heading match:', HeadingRule.regex.test(line), line);
     
         // TODO: 需要进行一些优化

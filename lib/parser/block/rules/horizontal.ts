@@ -10,7 +10,7 @@ export class HorizontalRule extends BaseBlockRule {
         super(RULE_PRIORITIES.HORIZONTAL); // 优先级高于段落(10)但低于列表(14)
     }
 
-    match(line: string, ctx: ParsingContext): boolean {
+    match(line: string, _ctx: ParsingContext): boolean {
         return HorizontalRule.regex.test(line.trim()) 
     }
 

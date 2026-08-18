@@ -2,8 +2,7 @@
 
 import { ParsingContext } from '../../core/state';
 import { Token } from '../../tokens/token';
-import { ParserState, ParserEvent } from '../../core/fsm/state';
-import { FSM } from '../../core/fsm/fsm';
+import { ParserEvent } from '../../core/fsm/state';
 
 /**
  * 块级规则基础类
@@ -30,11 +29,7 @@ export abstract class BlockRule {
 export class BlockParser {
   private rules: BlockRule[] = []; // 规则列表
   
-  private fsm: FSM; // 状态机
-  private context: ParsingContext;
   constructor() {
-    this.fsm = new FSM(ParserState.INITIAL);
-    this.context = new ParsingContext();
   }
   // 注册规则
   registerRule(rule: BlockRule): void {
@@ -48,7 +43,7 @@ export class BlockParser {
   // 解析行
   parseLine(line: string, ctx: ParsingContext): Token[] {
     // 根据行内容判断事件类型
-    let event = this.determineEvent(line);
+    const event = this.determineEvent(line);
     
 
     // 然后执行匹配的规则

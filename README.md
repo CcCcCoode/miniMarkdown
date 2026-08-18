@@ -1,85 +1,44 @@
-# 字节再爱我一次 520 团队
-## MiniMarkDownEditor项目开发
-我们将会在这里记录我们的开发过程以及更新日志
+# MiniMarkDownEditor
 
-## 当前 MVP 范围
+MiniMarkDownEditor 是一个基于 Vue 3 和 TypeScript 的 Markdown 编辑器，同时提供可独立使用的 Markdown Token 解析和安全 HTML 渲染 API。
 
-当前阶段先稳定 Markdown 核心的公共边界，不包含完整编辑器 UI。
+## 当前完成状态
 
-- 输入：Markdown 字符串
-- 输出：块级 Token 数组
-- 当前块级语法：段落、标题、列表、引用、水平线和基础表格
-- 暂不包含：行内语法、代码块、链接、图片、HTML 渲染和文件操作
+- 块级解析：段落、标题、无序/有序列表、嵌套列表、引用、表格、水平线
+- 行内解析：普通文本、转义、粗体、斜体、删除线、行内代码、链接、图片、硬换行
+- HTML 渲染：扁平 Token 流、安全文本和属性转义、自闭合元素
+- Vue 编辑器：实时预览、清空、复制、导出、本地草稿保存和错误提示
+- 工程化：Jest 测试、严格 TypeScript 检查、Vite 构建和 GitHub Actions CI
 
-公共入口位于 `lib/index.ts`：
+当前明确未实现的 Markdown 能力包括代码块、脚注、任务列表和完整 CommonMark 兼容性。
+
+## 公共 API
 
 ```ts
-import { parseMarkdown, TokenType } from './lib/index';
+import { parseMarkdown, renderTokens } from './lib/index';
 
-const tokens = parseMarkdown('# Hello');
+const tokens = parseMarkdown('# Hello **Markdown**');
+const html = renderTokens(tokens);
 ```
 
-解析入口是纯 API，不会在导入时读取 stdin 或产生 CLI 副作用。需要从 stdin 调试时使用独立的 `lib/cli.ts`。
+`renderTokens` 只把解析得到的白名单 Token 渲染为 HTML，文本和属性会自动转义，不执行用户输入中的原始 HTML。
 
-## TODO 清单
-- [✔] 完成 Token 的结构定义
-- [✔] 完成 AST 的处理逻辑 
-- 完成语法解析器的基础功能
-    - [ ] 完成基础标签的解析（h 、 p 、 li 等）
-    - [ ] 完成特殊标签的解析（img 、 a 、 hr 等）
-    - [ ] 完成特殊标签的解析（blockquote 、 code 、 table 等）
-    - [ ] 完成特殊标签的解析（ul 、 ol 等）
-    - [ ] 完成特殊标签的解析（div 、 span 等）
-    - [ ] 完成特殊标签的解析（hr 、 br 等）
+## 开发命令
 
-- 完成渲染器的基础功能
-    - [ ] 完成基础标签的渲染（h 、 p 、 li 等）
-    - [ ] 完成特殊标签的渲染（img 、 a 、 hr 等）
-    - [ ] 完成特殊标签的渲染（blockquote 、 code 、 table 等）
-    - [ ] 完成特殊标签的渲染（ul 、 ol 等）
-    - [ ] 完成特殊标签的渲染（div 、 span 等）
-    - [ ] 完成特殊标签的渲染（hr 、 br 等）
+```bash
+npm ci
+npm run dev
+npm test
+npm run typecheck
+npm run build
+npm run check
+```
 
-- [ ] 引入状态机模型进行状态处理
+## 目录说明
 
-## 更新日志
-#### 2025-02-17 <br>
-  @author COOSONWEI 完成了项目基础的架构划分具体如下：<br>
-├── core # 核心系统入口和基础类型定义 <br>
-│   ├── parser.ts # 解析器集成<br>
-│   ├── renderer # 渲染器功能实现 <br>
-│   │   └── htmlRender.ts <br>
-│   ├── state.ts # 解析器上下文<br>
-│   └── types # 接口定义<br>
-│       ├── parser.interface.ts <br>
-│       ├── renderer.interface.ts <br>
-│       └── token.interface.ts <br>
-├── index.ts # lib入口文件 <br>
-├── parser # 解析器具体实现 <br>
-│   ├── block # 块级解析 <br>
-│   │   ├── index.ts <br>
-│   │   ├── rules # 块级规则目录 <br>
-│   │   └── state.ts # 块级状态机 <br>
-│   ├── inline # 行级解析 <br>
-│   │   ├── index.ts <br>
-│   │   ├── rules # 行级规则目录 <br>
-│   │   └── state.ts # 行级状态机 <br>
-│   └── main.ts # 解析器 main 函数<br>
-├── plugins # 插件注册与管理 <br>
-│   └── manager.ts <br>
-├── rules #规则管理 <br>
-│   ├── base.ts # 基础规则接口<br>
-│   └── manager.ts # 规则管理<br>
-├── tokens # Token 数据结构与处理逻辑<br>
-│   └── token.ts <br>
-└── utils # 通用工具函数<br>
-    ├── cache.ts <br>
-    └── regex.ts # 正则表达式预编译<br>
-#### 2025-02-18 <br>
-  @author COOSONWEI 实现基础解析流程与段落/空行处理（p 标签实现）;
-#### 2025-02-22 <br>
-  @author COOSONWEI 实现 h 标签解析;
-#### 2025-02-23 <br>
-  @author COOSONWEI 实现 list 标签解析（ul 、 ol ）;
-#### 2025-02-24 <br>
-  @author COOSONWEI 实现  引用 标签解析（ul 、 ol ）;
+- `lib/core/parser.ts`：块级解析入口
+- `lib/parser/inline/index.ts`：行内解析器
+- `lib/core/renderer/htmlRender.ts`：HTML Renderer
+- `lib/tokens/token.ts`：公共 Token 类型和结构
+- `src/App.vue`：Vue 编辑器界面
+- `test/`：解析器和 Renderer 测试
