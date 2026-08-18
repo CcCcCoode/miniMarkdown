@@ -11,6 +11,10 @@ import { BaseBlockRule } from "./base";
 export class BlockQuoteRule extends BaseBlockRule {
     private static regex = /^(\>+)\s*(.*)/; // 正则表达式
 
+    static isQuoteLine(line: string): boolean {
+        return BlockQuoteRule.regex.test(line);
+    }
+
     constructor() {
         super(RULE_PRIORITIES.BLOCKQUOTE); // p < 优先级 < list
     }
@@ -24,14 +28,16 @@ export class BlockQuoteRule extends BaseBlockRule {
         const match = line.match(BlockQuoteRule.regex)!;
         const level = match[1].length; // 计算引用层级
         const content = match[2];
-
-        // 重置段落状态
-        ctx.setInParagraph(false);
-
         const tokens: Token[] = [];
 
+        // 重置段落状态
+        if (ctx.isInParagraph) {
+            tokens.push(new Token({ type: TokenType.PARAGRAPH_CLOSE, tag: 'p', nesting: -1, block: true }));
+        }
+        ctx.setInParagraph(false);
+
         // 处理层级嵌套
-        while (ctx.currentQuoteLevel >= level) {
+        while (ctx.currentQuoteLevel > level) {
             tokens.push(this.createCloseToken(ctx.currentQuoteLevel));
             ctx.leaveQuoteLevel();
         }

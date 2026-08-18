@@ -45,7 +45,7 @@ export class MarkdownParser {
         // 解析前重置上下文，避免多次 parse 之间状态泄漏
         this.context.reset();
 
-        const lines = markdown.split('\n');
+        const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
         // 将行数据注入上下文，供表格等需要读取下一行的规则使用
         this.context.setLines(lines);
 
@@ -55,6 +55,9 @@ export class MarkdownParser {
             const line = lines[this.context.currentLine];
             tokens.push(...this.parseLine(line));
         }
+
+        tokens.push(...this.closeLists());
+        tokens.push(...this.closeBlockquotes());
 
         // 文档结束时自动闭合未闭合的段落，保证输出标签完整
         if (this.context.isInParagraph) {
@@ -72,8 +75,17 @@ export class MarkdownParser {
 
     // 解析行
     private parseLine(line: string): Token[] {
+        const tokens: Token[] = [];
 
-        const tokens = this.blockParser.parseLine(line, this.context);
+        // 离开列表或引用时先补齐对应的关闭标签
+        if (this.context.isListActive && !ListRule.isListLine(line)) {
+            tokens.push(...this.closeLists());
+        }
+        if (this.context.currentQuoteLevel > 0 && !BlockQuoteRule.isQuoteLine(line)) {
+            tokens.push(...this.closeBlockquotes());
+        }
+
+        tokens.push(...this.blockParser.parseLine(line, this.context));
 
         // 调试输出
         if (this.debug) {
@@ -84,6 +96,47 @@ export class MarkdownParser {
             });
         }
         
+        return tokens;
+    }
+
+    // 关闭所有未完成的列表层级
+    private closeLists(): Token[] {
+        const tokens: Token[] = [];
+        while (this.context.currentListLevel > 0) {
+            if (this.context.isCurrentListItemOpen) {
+                tokens.push(new Token({
+                    type: TokenType.LIST_ITEM_CLOSE,
+                    tag: 'li',
+                    nesting: -1,
+                    block: true,
+                }));
+                this.context.closeListItem();
+            }
+
+            tokens.push(new Token({
+                type: TokenType.LIST_CLOSE,
+                tag: this.context.getCurrentListTag() ?? 'ul',
+                nesting: -1,
+                block: true,
+            }));
+            this.context.leaveListLevel();
+        }
+        return tokens;
+    }
+
+    // 关闭所有未完成的引用层级
+    private closeBlockquotes(): Token[] {
+        const tokens: Token[] = [];
+        while (this.context.currentQuoteLevel > 0) {
+            tokens.push(new Token({
+                type: TokenType.BLOCKQUOTE_CLOSE,
+                tag: 'blockquote',
+                nesting: -1,
+                block: true,
+                level: this.context.currentQuoteLevel,
+            }));
+            this.context.leaveQuoteLevel();
+        }
         return tokens;
     }
 

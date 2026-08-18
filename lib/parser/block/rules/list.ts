@@ -21,12 +21,12 @@ export class ListRule extends BaseBlockRule {
     }
 
 
+    static isListLine(line: string): boolean {
+        return /^([ \t]*)([-\*\+])\s+(.*)/.test(line) || /^([ \t]*)(\d+)\.\s+(.*)/.test(line);
+    }
+
     match(line: string, ctx: ParsingContext): boolean {
-        // 如果已经达到最大嵌套层级，不再匹配新的列表项
-        if (ctx.currentListLevel >= ListRule.MAX_NESTING_LEVEL) {
-            return false;
-        }
-        return this.unorderedRegex.test(line) || this.orderedRegex.test(line);
+        return ListRule.isListLine(line);
     }
 
 
@@ -46,47 +46,78 @@ export class ListRule extends BaseBlockRule {
             return [];
         }
 
-        const content = match[3];
-        const currentLevel = ctx.currentListLevel;
-
-        // 处理列表层级变化，确保不会超过最大层级
-        if (currentLevel > 0) {
-            // 如果缩进小于等于当前层级的缩进，关闭当前层级
-            while (currentLevel > 0 && indent <= ctx.getCurrentListIndent() && ctx.currentListLevel > 0) {
-                ctx.leaveListLevel();
-                tokens.push(
-                    new Token({
-                        type: TokenType.LIST_CLOSE,
-                        tag: isOrdered ? 'ol' : 'ul',
-                        nesting: -1,
-                        block: true,
-                        level: currentLevel
-                    })
-                );
-            }
+        if (ctx.isInParagraph) {
+            tokens.push(new Token({ type: TokenType.PARAGRAPH_CLOSE, tag: 'p', nesting: -1, block: true }));
+            ctx.setInParagraph(false);
         }
 
-        // 只有在未达到最大层级时才创建新的列表层级
-        if (currentLevel < ListRule.MAX_NESTING_LEVEL && 
-            (currentLevel === 0 || indent > ctx.getCurrentListIndent())) {
-            ctx.enterListLevel(indent);
-            tokens.push(
-                new Token({
+        const content = match[3];
+        let currentLevel = ctx.currentListLevel;
+
+        // 处理缩进减少，先关闭已经离开的列表层级
+        while (currentLevel > 0 && indent < ctx.getCurrentListIndent()) {
+            if (ctx.isCurrentListItemOpen) {
+                tokens.push(new Token({ type: TokenType.LIST_ITEM_CLOSE, tag: 'li', nesting: -1, block: true }));
+                ctx.closeListItem();
+            }
+            const closingTag = ctx.getCurrentListTag() ?? 'ul';
+            tokens.push(new Token({
+                type: TokenType.LIST_CLOSE,
+                tag: closingTag,
+                nesting: -1,
+                block: true,
+            }));
+            ctx.leaveListLevel();
+            currentLevel = ctx.currentListLevel;
+        }
+
+        // 达到最大层级时，将更深缩进作为当前层级处理，避免丢失文本
+        if (currentLevel >= ListRule.MAX_NESTING_LEVEL && indent > ctx.getCurrentListIndent()) {
+            indent = ctx.getCurrentListIndent();
+        }
+
+        if (currentLevel === 0 || indent > ctx.getCurrentListIndent()) {
+            ctx.enterListLevel(indent, isOrdered ? 'ol' : 'ul');
+            tokens.push(new Token({
+                type: TokenType.LIST_OPEN,
+                tag: isOrdered ? 'ol' : 'ul',
+                nesting: 1,
+                block: true,
+                level: currentLevel,
+            }));
+        } else if (indent === ctx.getCurrentListIndent()) {
+            if (ctx.getCurrentListTag() !== (isOrdered ? 'ol' : 'ul')) {
+                if (ctx.isCurrentListItemOpen) {
+                    tokens.push(new Token({ type: TokenType.LIST_ITEM_CLOSE, tag: 'li', nesting: -1, block: true }));
+                    ctx.closeListItem();
+                }
+                tokens.push(new Token({
+                    type: TokenType.LIST_CLOSE,
+                    tag: ctx.getCurrentListTag() ?? 'ul',
+                    nesting: -1,
+                    block: true,
+                }));
+                ctx.leaveListLevel();
+                ctx.enterListLevel(indent, isOrdered ? 'ol' : 'ul');
+                tokens.push(new Token({
                     type: TokenType.LIST_OPEN,
                     tag: isOrdered ? 'ol' : 'ul',
                     nesting: 1,
                     block: true,
-                    level: currentLevel
-                })
-            );
+                    level: currentLevel,
+                }));
+            } else if (ctx.isCurrentListItemOpen) {
+                tokens.push(new Token({ type: TokenType.LIST_ITEM_CLOSE, tag: 'li', nesting: -1, block: true }));
+                ctx.closeListItem();
+            }
         }
 
-        // 添加列表项
+        // 添加当前列表项
         tokens.push(
             new Token({type: TokenType.LIST_ITEM_OPEN, tag: 'li', nesting: 1, block: true}),
             new Token({type: TokenType.TEXT, content: content.trim()}),
-            new Token({type: TokenType.LIST_ITEM_CLOSE, tag: 'li', nesting: -1})
         );
+        ctx.openListItem();
 
         return tokens;
     }

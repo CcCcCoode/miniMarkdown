@@ -101,6 +101,10 @@ export class TableRule extends BaseBlockRule {
             const nextLine = lines[index + 1];
             if (nextLine && this.isSeparatorLine(nextLine)) {
                 // 开始新表格
+                if (ctx.isInParagraph) {
+                    tokens.push(new Token({ type: TokenType.PARAGRAPH_CLOSE, tag: 'p', nesting: -1, block: true }));
+                    ctx.setInParagraph(false);
+                }
                 tokens.push(new Token({
                     type: TokenType.TABLE_OPEN,
                     tag: 'table',

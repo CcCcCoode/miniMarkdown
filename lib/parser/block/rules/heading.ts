@@ -1,6 +1,6 @@
 import { RULE_PRIORITIES } from "../../../command/priority";
 import { ParsingContext } from "../../../core/state";
-import { Token } from "../../../tokens/token";
+import { Token, TokenType } from "../../../tokens/token";
 import { BaseBlockRule } from "./base";
 
 /**
@@ -28,11 +28,15 @@ export class HeadingRule extends BaseBlockRule {
     execute(line: string, ctx: ParsingContext): Token[] {
         const match = line.match(HeadingRule.regex)!;
         const level = Math.min(match[1].length, 6); // 最小就是 h6
+        const tokens: Token[] = [];
+        if (ctx.isInParagraph) {
+            tokens.push(new Token({ type: TokenType.PARAGRAPH_CLOSE, tag: 'p', nesting: -1, block: true }));
+        }
         ctx.setInParagraph(false);
         ctx.setListActive(false);
-        ctx.setHeadingActive(true);
+        ctx.setHeadingActive(false);
 
-        return [
+        tokens.push(
             new Token({
                 type: `heading_open`,
                 tag: `h${level}`,
@@ -47,7 +51,8 @@ export class HeadingRule extends BaseBlockRule {
                 nesting: -1,
                 block: true,
                 level: ctx.indentLevel
-            })
-        ];
+            }),
+        );
+        return tokens;
     }
 }

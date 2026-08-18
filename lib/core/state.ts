@@ -12,6 +12,8 @@ export class ParsingContext {
       tableAlignments: string[]; // 表格列对齐方式
       tableRowCount: number; // 表格行数
       tableStartIndex: number | null; // 表格起始位置
+      listTagStack: Array<'ul' | 'ol'>; // 列表标签栈
+      listItemOpenStack: boolean[]; // 当前列表项是否已打开
       // TODO: 后续可能考虑抽离为单独的层级管理
       listLevelStack: number[]; // 列表层级栈
       quoteLevelStack: number[]; // 引用层级栈
@@ -26,6 +28,8 @@ export class ParsingContext {
           tableAlignments: [],
           tableRowCount: 0,
           tableStartIndex: null,
+          listTagStack: [],
+          listItemOpenStack: [],
           listLevelStack: [],
           quoteLevelStack: []
       }
@@ -102,19 +106,49 @@ export class ParsingContext {
       return stack.length > 0 ? stack[stack.length - 1] : 0;
   }
 
+  // 获取当前列表标签
+  getCurrentListTag(): 'ul' | 'ol' | null {
+      const stack = this.currentState.listTagStack;
+      return stack.length > 0 ? stack[stack.length - 1] : null;
+  }
+
+  // 获取当前列表项是否已打开
+  get isCurrentListItemOpen(): boolean {
+      const stack = this.currentState.listItemOpenStack;
+      return stack.length > 0 ? stack[stack.length - 1] : false;
+  }
+
+  // 打开当前列表项
+  openListItem() {
+      if (this.currentState.listItemOpenStack.length > 0) {
+          this.currentState.listItemOpenStack[this.currentState.listItemOpenStack.length - 1] = true;
+      }
+  }
+
+  // 关闭当前列表项
+  closeListItem() {
+      if (this.currentState.listItemOpenStack.length > 0) {
+          this.currentState.listItemOpenStack[this.currentState.listItemOpenStack.length - 1] = false;
+      }
+  }
+
   // 进入新的列表层级
-  enterListLevel(indent: number) {
+  enterListLevel(indent: number, tag: 'ul' | 'ol' = 'ul') {
       if (this.currentState.listLevelStack.length >= 5) {
           return; // 防止超过最大嵌套层级
       }
       this.currentState.listActive = true;
       this.currentState.listLevelStack.push(indent);
+      this.currentState.listTagStack.push(tag);
+      this.currentState.listItemOpenStack.push(false);
   }
 
   // 退出当前列表层级
   leaveListLevel() {
       if (this.currentState.listLevelStack.length > 0) {
           this.currentState.listLevelStack.pop();
+          this.currentState.listTagStack.pop();
+          this.currentState.listItemOpenStack.pop();
           this.currentState.listActive = this.currentState.listLevelStack.length > 0;
       }
   }
@@ -136,6 +170,8 @@ export class ParsingContext {
           tableAlignments: [...this.currentState.tableAlignments],
           tableRowCount: this.currentState.tableRowCount,
           tableStartIndex: this.currentState.tableStartIndex,
+          listTagStack: [...this.currentState.listTagStack],
+          listItemOpenStack: [...this.currentState.listItemOpenStack],
           listLevelStack: [...this.currentState.listLevelStack],
           quoteLevelStack: [...this.currentState.quoteLevelStack]
       });
@@ -223,6 +259,8 @@ export class ParsingContext {
     this.setInTable(false);
     // 清空列表/引用层级栈，避免跨次解析残留嵌套状态
     this.currentState.listLevelStack = [];
+    this.currentState.listTagStack = [];
+    this.currentState.listItemOpenStack = [];
     this.currentState.quoteLevelStack = [];
     this.currentState.inBlockquote = false;
     this.indentLevel = 0;

@@ -15,19 +15,25 @@ export class HorizontalRule extends BaseBlockRule {
     }
 
     execute(line: string, ctx: ParsingContext): Token[] {
+        const tokens: Token[] = [];
+        if (ctx.isInParagraph) {
+            tokens.push(new Token({ type: TokenType.PARAGRAPH_CLOSE, tag: 'p', nesting: -1, block: true }));
+        }
+
         // 重置上下文状态
         ctx.setInParagraph(false);
         ctx.setListActive(false);
         ctx.setHeadingActive(false);
 
-        return [
+        tokens.push(
             new Token({
                 type: TokenType.HORIZONTAL_RULE,
                 tag: 'hr',
                 nesting: 0, // 自闭合标签
                 block: true,
                 markup: line[0].repeat(3) // 保留原始符号
-            })
-        ];
+            }),
+        );
+        return tokens;
     }
 }

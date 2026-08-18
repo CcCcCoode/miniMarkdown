@@ -54,7 +54,7 @@ export class ParagraphRule implements BlockRule {
     return tokens;
   }
 
-     // 如果不在段落中，则开启新段落
+    // 如果不在段落中，则开启新段落
   if (!ctx.isInParagraph) {
     ctx.setInParagraph(true);
     tokens.push(new Token({
