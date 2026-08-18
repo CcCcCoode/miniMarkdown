@@ -1,4 +1,9 @@
-# MiniMarkDownEditor
+# 字节再爱我一次 520 团队
+## MiniMarkDownEditor项目开发
+
+我们将会在这里记录我们的开发过程以及更新日志
+
+## MiniMarkDownEditor
 
 MiniMarkDownEditor 是一个基于 Vue 3 和 TypeScript 的 Markdown 编辑器，同时提供可独立使用的 Markdown Token 解析和安全 HTML 渲染 API。
 
@@ -11,6 +16,17 @@ MiniMarkDownEditor 是一个基于 Vue 3 和 TypeScript 的 Markdown 编辑器�
 - 工程化：Jest 测试、严格 TypeScript 检查、Vite 构建和 GitHub Actions CI
 
 当前明确未实现的 Markdown 能力包括代码块、脚注、任务列表和完整 CommonMark 兼容性。
+
+## TODO 清单
+
+- [x] 完成 Token 的结构定义
+- [x] 完成块级解析器基础功能
+- [x] 完成行内语法解析
+- [x] 完成 HTML Renderer
+- [x] 完成 Vue 编辑器接入
+- [x] 完成严格类型检查、测试命令和 CI 构建检查
+- [ ] 支持代码块、脚注和任务列表
+- [ ] 提升 CommonMark 兼容性
 
 ## 公共 API
 
@@ -42,3 +58,44 @@ npm run check
 - `lib/tokens/token.ts`：公共 Token 类型和结构
 - `src/App.vue`：Vue 编辑器界面
 - `test/`：解析器和 Renderer 测试
+
+## 更新日志
+
+#### 2025-02-17
+
+@author COOSONWEI 完成了项目基础的架构划分，具体如下：
+
+```text
+core/       核心系统入口和基础类型定义
+  parser.ts
+  renderer/htmlRender.ts
+  state.ts
+parser/     解析器具体实现
+  block/
+  inline/
+  main.ts
+plugins/    插件注册与管理
+rules/      规则管理
+tokens/     Token 数据结构与处理逻辑
+utils/      通用工具函数
+```
+
+#### 2025-02-18
+
+@author COOSONWEI 实现基础解析流程与段落/空行处理（p 标签实现）。
+
+#### 2025-02-22
+
+@author COOSONWEI 实现 h 标签解析。
+
+#### 2025-02-23
+
+@author COOSONWEI 实现 list 标签解析（ul、ol）。
+
+#### 2025-02-24
+
+@author COOSONWEI 实现引用标签解析。
+
+#### 2026-08-18
+
+完成块级状态修复、行内解析、HTML Renderer、Vue 编辑器接入和工程化检查。
