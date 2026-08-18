@@ -1,6 +1,6 @@
-import { Token } from "..";
 import { RULE_PRIORITIES } from "../../../command/priority";
 import { ParsingContext } from "../../../core/state";
+import { Token } from "../../../tokens/token";
 import { BaseBlockRule } from "./base";
 
 /**

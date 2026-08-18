@@ -2,6 +2,25 @@
 ## MiniMarkDownEditor项目开发
 我们将会在这里记录我们的开发过程以及更新日志
 
+## 当前 MVP 范围
+
+当前阶段先稳定 Markdown 核心的公共边界，不包含完整编辑器 UI。
+
+- 输入：Markdown 字符串
+- 输出：块级 Token 数组
+- 当前块级语法：段落、标题、列表、引用、水平线和基础表格
+- 暂不包含：行内语法、代码块、链接、图片、HTML 渲染和文件操作
+
+公共入口位于 `lib/index.ts`：
+
+```ts
+import { parseMarkdown, TokenType } from './lib/index';
+
+const tokens = parseMarkdown('# Hello');
+```
+
+解析入口是纯 API，不会在导入时读取 stdin 或产生 CLI 副作用。需要从 stdin 调试时使用独立的 `lib/cli.ts`。
+
 ## TODO 清单
 - [✔] 完成 Token 的结构定义
 - [✔] 完成 AST 的处理逻辑 

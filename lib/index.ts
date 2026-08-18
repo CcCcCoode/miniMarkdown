@@ -1,20 +1,15 @@
-// 整个 lib 的入口文件
+// Markdown 解析器公共 API。
 
-import { MarkdownParser } from "./core/parser";
+import { MarkdownParser, type MarkdownParserOptions } from './core/parser';
+import { Token, TokenType } from './tokens/token';
 
-/**
- * 入口测试
- */
-process.stdin.setEncoding('utf8');
+export { MarkdownParser, Token, TokenType };
+export type { MarkdownParserOptions };
 
-let input = '';
-
-process.stdin.on('data', (chunk) => {
-    input += chunk;
-  });
-  
-  process.stdin.on('end', () => {
-    const parser = new MarkdownParser();
-    const tokens = parser.parse(input);
-    console.log(JSON.stringify(tokens, null, 2));
-  });
+/** 将 Markdown 字符串解析为当前的块级 Token 模型。 */
+export function parseMarkdown(
+    markdown: string,
+    options: MarkdownParserOptions = {},
+): Token[] {
+    return new MarkdownParser(options).parse(markdown);
+}

@@ -3,8 +3,7 @@
  * 块级解析规则基类
  */
 
-import { Token } from "..";
-import { TokenType } from "../../../tokens/token";
+import { Token, TokenType } from "../../../tokens/token";
 import { BlockRule } from "../state";
 
 

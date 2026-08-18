@@ -17,6 +17,10 @@ import { TableRule } from '../parser/block/rules/table';
  * @author COOSONWEI
  */
 
+export interface MarkdownParserOptions {
+    debug?: boolean;
+}
+
 export class MarkdownParser {
     private debug: boolean; // 是否开启调试模式
 
@@ -25,7 +29,7 @@ export class MarkdownParser {
     private blockParser = new BlockParser();
 
 
-    constructor(options: { debug?: boolean } = {}) {
+    constructor(options: MarkdownParserOptions = {}) {
         this.debug = options.debug || false;
          // 注册规则
         this.blockParser.registerRule(new EmptyLineRule());
